@@ -1,5 +1,6 @@
 package com.alexandrekpr.qrcode.generator.service;
 import com.alexandrekpr.qrcode.generator.dto.QrCodeGenerateResponse;
+import com.alexandrekpr.qrcode.generator.exceptions.QrCodeGenerationException;
 import com.alexandrekpr.qrcode.generator.ports.StoragePort;
 
 import java.io.ByteArrayOutputStream;
@@ -23,16 +24,21 @@ public class QrCodeGeneratorService {
     this.storage = storage;
   }
 
-  public QrCodeGenerateResponse generateAndUploadQrCode(String text) throws WriterException, IOException {
-    QRCodeWriter qrCodeWriter = new QRCodeWriter();
-    BitMatrix bitMatrix = qrCodeWriter.encode(text, BarcodeFormat.QR_CODE, 200, 200);
-    
-    ByteArrayOutputStream pngOutputStream = new ByteArrayOutputStream();
-    MatrixToImageWriter.writeToStream(bitMatrix, "PNG", pngOutputStream);
-    byte[] pngQrCodeData = pngOutputStream.toByteArray();
+  public QrCodeGenerateResponse generateAndUploadQrCode(String text) {
+    try {
+        QRCodeWriter qrCodeWriter = new QRCodeWriter();
+        BitMatrix bitMatrix = qrCodeWriter.encode(text, BarcodeFormat.QR_CODE, 200, 200);
+        
+        ByteArrayOutputStream pngOutputStream = new ByteArrayOutputStream();
+        MatrixToImageWriter.writeToStream(bitMatrix, "PNG", pngOutputStream);
+        byte[] pngQrCodeData = pngOutputStream.toByteArray();
 
-    String url = storage.uploadFile(pngQrCodeData, UUID.randomUUID().toString(), "image/png");
+        String url = storage.uploadFile(pngQrCodeData, UUID.randomUUID().toString(), "image/png");
 
-    return new QrCodeGenerateResponse(url);
-  }
+        return new QrCodeGenerateResponse(url);
+        
+    } catch (WriterException | IOException e) {
+        throw new QrCodeGenerationException("Failed to generate QR Code", e);
+    }
+}
 }

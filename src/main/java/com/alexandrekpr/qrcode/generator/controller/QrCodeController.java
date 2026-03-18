@@ -10,6 +10,8 @@ import com.alexandrekpr.qrcode.generator.dto.QrCodeGenerateRequest;
 import com.alexandrekpr.qrcode.generator.dto.QrCodeGenerateResponse;
 import com.alexandrekpr.qrcode.generator.service.QrCodeGeneratorService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/qrcode")
 public class QrCodeController {
@@ -21,13 +23,8 @@ public class QrCodeController {
   }
   
   @PostMapping
-  public ResponseEntity<QrCodeGenerateResponse> generate(@RequestBody QrCodeGenerateRequest request) {
-    try {
+  public ResponseEntity<QrCodeGenerateResponse> generate(@Valid @RequestBody QrCodeGenerateRequest request) {
       QrCodeGenerateResponse response = this.qrCodeGeneratorService.generateAndUploadQrCode(request.text());
       return ResponseEntity.ok(response);
-    } catch (Exception e) {
-      System.out.println("Error generating QR code: " + e.getMessage());
-      return ResponseEntity.status(500).build();
-    }
   }
 }
